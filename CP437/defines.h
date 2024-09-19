@@ -3,7 +3,7 @@
  * Constants 
  */
 
-#define FRAME_DURATION 200
+#define FRAME_DURATION 20
 #define PI 3.141592653589793
 
 #define SCREEN_WIDTH 128 

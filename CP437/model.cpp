@@ -7,7 +7,9 @@
 
 point rotate(point *p0, uint8_t step);
 
-void init_game() {}
+void init_game() {
+  Platform::setTextRawMode(true);
+}
 
 void step_model(uint16_t frame) {
 

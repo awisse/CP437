@@ -39,6 +39,7 @@ public:
   static unsigned long millis();
 
   // Print
+  static void setTextRawMode(bool raw);
   static void setCursor(int16_t, int16_t);
   static size_t print(const char str[]);
   static size_t print(char c);

@@ -24,6 +24,7 @@ void setup() {
   }
   arduboy.clear();
   arduboy.setFrameDuration(FRAME_DURATION);
+  init_game();
 }
 
 void loop() {
@@ -93,6 +94,9 @@ static void Platform::display(bool clear)
   arduboy.display(clear);
 }
 /************* Text *************************************************/
+static void Platform::setTextRawMode(bool raw) {
+  arduboy.setTextRawMode(raw);
+}
 static void Platform::setCursor(int16_t x, int16_t y)
 {
   arduboy.setCursor(x, y);
