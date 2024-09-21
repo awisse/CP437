@@ -24,4 +24,4 @@ $(TARGET) : $(OBJECTS)
 .PHONY: clean
 clean:
 	$(RM) $(TARGET)
-	$(RM) $(OBJECTS)
+	$(RM) $(OBJECTS) Font5x7.o
