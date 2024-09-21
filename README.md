@@ -5,7 +5,7 @@ the builtin 5x7 font.
 
 Characters `0x0a` and `0x0d` have special treatment on the Arduboy. The
 first is used as newline with the `print` statement and the second is 
-ignored. Both are shown as the CP437 characters on the screen by setting
+ignored. Both are shown as the corresponding CP437 characters on the screen by setting
 `arduboy.setTextRawMode(true)`.
 
 This example contains a fairly complete implementation of functions of 
@@ -21,3 +21,6 @@ few floating point numbers.
 Do away with platform.h and implement the `Arduboy2` class directly in 
 *Desktop/ardusdl.cpp*. Adapt the *Arduboy2.h* header for this purpose and 
 import it in *ardusdl.cpp*.
+
+## Credits
+Some pieces of printing code copied directly from [MLXXXp/Arduboy2](https://github.com/MLXXXp/Arduboy2.git).
