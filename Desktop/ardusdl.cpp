@@ -19,15 +19,21 @@ uint8_t sBuffer[SCREEN_WIDTH * SCREEN_HEIGHT / 8];
 EEPROM eeprom;
 unsigned long StartTime;
 int zoom_scale;
-point cursor;
+bool textRawMode;
 #ifdef _DEBUG
 int counter;
 #endif
 
 uint8_t InputMask = 0;
 void cleanup();
-size_t write(uint8_t c); // Write one character at the cursor. Characters 
-                         // from Font5x7.h
+
+//private:
+size_t write(uint8_t c); // Write one character at the cursor.
+size_t write(const char str[]); // Write a string at the cursor.
+size_t printNumber(uint32_t n, int base);
+size_t printFloat(float x, int decimals);
+point cursor;
+uint8_t previousButtonState, currentButtonState;
 
 // Helper
 void SetColour(uint8_t colour) {
@@ -51,6 +57,27 @@ uint8_t Platform::buttonsState()
   return InputMask;
 }
 
+bool Platform::pressed(uint8_t buttons) {
+  return (buttonsState() & buttons) == buttons;
+}
+
+void Platform::pollButtons(void) {
+
+  previousButtonState = currentButtonState;
+  currentButtonState = buttonsState();
+}
+
+bool Platform::justPressed(uint8_t button) {
+
+  return (!(previousButtonState & button) && (currentButtonState & button));
+}
+
+bool Platform::justReleased(uint8_t button) {
+
+  return ((previousButtonState & button) && !(currentButtonState & button));
+
+}
+
 // Drawing
 void Platform::drawPixel(uint8_t x, uint8_t y, uint8_t colour) {
 
@@ -62,19 +89,20 @@ void Platform::drawPixel(uint8_t x, uint8_t y, uint8_t colour) {
   SDL_RenderDrawPoint(AppRenderer, x, y);
 }
 
-void Platform::drawBitmap(const uint8_t* data, int16_t x, int16_t y,
+void Platform::drawBitmap(int16_t x, int16_t y, const uint8_t* data,
     uint8_t w, uint8_t h, uint8_t colour)
 {
   for (int j = 0; j < h; j++)
   {
+    uint8_t mask = 1 << (j % 8);
+    int blockY = j / 8;
+
     for (int i = 0; i < w; i++)
     {
       int blockX = i / 8;
-      int blockY = j / 8;
       int blocksPerWidth = w / 8;
       int blockIndex = blockY * blocksPerWidth + blockX;
       uint8_t pixels = data[blockIndex * 8 + i % 8];
-      uint8_t mask = 1 << (j % 8);
       if (pixels & mask)
       {
         drawPixel(x + i, y + j, colour);
@@ -242,14 +270,27 @@ unsigned long Platform::millis() {
   return ms;
 }
 
-// Print
+/******************** Text Functions *************************************/
+void Platform::setTextRawMode(bool raw) {
+  textRawMode = raw;
+}
+
 void Platform::setCursor(int16_t x, int16_t y) {
   cursor.x = x;
   cursor.y = y;
 }
 
+int16_t Platform::getCursorX(void) {
+  return cursor.x;
+}
+
+int16_t Platform::getCursorY(void) {
+  return cursor.y;
+}
+
+/******************** Print **********************************************/
 size_t Platform::print(const char str[]) {
-  return 1;
+  return write(str);
 }
 
 size_t Platform::print(char c) {
@@ -260,61 +301,101 @@ size_t Platform::print(unsigned char c) {
   return write(c);
 }
 
-size_t Platform::print(int x, int fmt) {
-  return 1;
+// Careful: `int` is 16 bits on Arduino, but 32 bits on a regular computer.
+size_t Platform::print(int16_t n, uint8_t base) {
+  // Conversion to 16 bits
+
+  return print((int32_t)n, base);
 }
 
-size_t Platform::print(unsigned int x, int fmt) {
-  return 1;
+size_t Platform::print(uint16_t n, uint8_t base) {
+  return print((uint32_t)n, base);
 }
 
-size_t Platform::print(long x, int fmt) {
-  return 1;
+// Careful: `long` is 32 bits on Arduino, but 64 bits on a regular computer.
+size_t Platform::print(int32_t n, uint8_t base) {
+  size_t t = 0;
+
+
+  if ((n < 0) && (base == 10)) {
+    t = write('-');
+    cursor.x += FONT_WIDTH + 1;
+    n = -n;
+  }
+
+  t += printNumber(n, base);
+
+  return t;
 }
 
-size_t Platform::print(unsigned long x, int fmt) {
-  return 1;
+size_t Platform::print(uint32_t n, uint8_t base) {
+  size_t t = printNumber(n, base);
+  return t;
 }
 
-size_t Platform::print(float x, int decimals) {
-  return 1;
+size_t Platform::print(float x, uint8_t decimals) {
+  return printFloat(x, decimals);
 }
 
+
+size_t Platform::println(void) {
+  return write('\n');
+}
 
 size_t Platform::println(const char str[]) {
-  return 1;
+  size_t t;
+  t = print(str);
+  t += println();
+  return t;
 }
 
 size_t Platform::println(char c) {
-  return 1;
+  size_t t;
+  t = print(c);
+  t += println();
+  return t;
 }
 
 size_t Platform::println(unsigned char c) {
-  return 1;
+  return print((char)c);
 }
 
-size_t Platform::println(int x, int fmt) {
-  return 1;
+size_t Platform::println(int16_t n, uint8_t base) {
+  size_t t;
+  t = print(n, base);
+  t += println();
+  return t;
 }
 
-size_t Platform::println(unsigned int x, int fmt) {
-  return 1;
+size_t Platform::println(uint16_t n, uint8_t base) {
+  size_t t;
+  t = print(n, base);
+  t += println();
+  return t;
 }
 
-size_t Platform::println(long x, int fmt) {
-  return 1;
+size_t Platform::println(int32_t n, uint8_t base) {
+  size_t t;
+  t = print(n, base);
+  t += println();
+  return t;
 }
 
-size_t Platform::println(unsigned long x, int fmt) {
-  return 1;
+size_t Platform::println(uint32_t n, uint8_t base) {
+  size_t t;
+  t = print(n, base);
+  t += println();
+  return t;
 }
 
-size_t Platform::println(float x, int decimals) {
-  return 1;
+size_t Platform::println(float x, uint8_t decimals) {
+  size_t t = printFloat(x, decimals);
+  t += println();
+  return t;
 }
 
 
-// 
+//
 #ifdef _DEBUG
 void Platform::DebugPrint(uint16_t value) {
   std::cout << value << ":";
@@ -324,7 +405,7 @@ void Platform::DebugPrint(uint16_t value) {
   }
 }
 
-void Platform::DebugPrint(unsigned long value) {
+void Platform::DebugPrint(uint32_t value) {
   std::cout << value << ":";
   std::cout.flush();
   if (++counter % 8 == 0) {
@@ -401,7 +482,7 @@ void Initialize() {
   }
   StartTime = 1000 * ts.tv_sec + ts.tv_nsec / 1000000;
   // Initialize game
-  init_game();
+  initialize();
   // Initialize random number generator.
   srandom(StartTime);
 }
@@ -548,16 +629,70 @@ void cleanup() {
 }
 
 size_t write(uint8_t c) {
-  Platform::drawBitmap(&font5x7[FONT_WIDTH * c], cursor.x, cursor.y, 5, 7);
-  cursor.x += FONT_WIDTH + 1;
-  if (cursor.x >= SCREEN_WIDTH) {
-    cursor.x = 0;
-    cursor.y += FONT_HEIGHT + 1;
-    if (cursor.y >= SCREEN_HEIGHT) {
-      cursor.y = 0;
+
+  // Erase rectangle first
+  Platform::fillRect(cursor.x, cursor.y,
+      FONT_WIDTH + 1, FONT_HEIGHT + 1, COLOUR_BLACK);
+
+  if (!textRawMode) {
+    switch (c) {
+    case 0xa:
+      cursor.x = 0;
+      cursor.y += FONT_HEIGHT + 1;
+      return 0;
+    case 0xd:
+      return 1;
     }
   }
+
+  Platform::drawBitmap(cursor.x, cursor.y, &font5x7[FONT_WIDTH * c], 5, 8);
   return 1;
 }
-  
+
+size_t write(const char str[]) { // Write a string at the cursor.
+  int char_pos = 0, t = 0;
+  char c;
+
+  while ((c=str[char_pos++]) && (cursor.x < SCREEN_WIDTH)) {
+    t += write(c);
+    cursor.x += FONT_WIDTH + 1;
+  }
+  return t;
+}
+
+size_t printNumber(uint32_t n, int base)
+{
+  char buf[8 * sizeof(uint32_t) + 1]; // Assumes 8-bit chars plus zero byte.
+  char *str = &buf[sizeof(buf) - 1];
+
+  // Fill buffer from right to left
+  *str = '\0';
+
+  // prevent crash if called with base == 1
+  if (base < 2) base = 10;
+
+  do {
+    char c = n % base;
+    n /= base;
+
+    *--str = c < 10 ? c + '0' : c + 'A' - 10;
+  } while(n);
+
+  return write(str);
+}
+
+size_t printFloat(float x, int decimals)
+{
+  size_t t;
+  char strfloat[64]; // Resulting string
+  char format[6]; // Format string
+  char fmt_tpl[] = "%%.%df";
+
+  t = sprintf(format, fmt_tpl, decimals);
+  t = sprintf(strfloat, format, x);
+
+  t = Platform::print(strfloat);
+
+  return t;
+}
 // vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab:filetype=cpp

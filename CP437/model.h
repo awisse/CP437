@@ -5,5 +5,5 @@
 #pragma once
 #include <stdint.h>
 
-void init_game();
+void initialize();
 void step_model(uint16_t frame);

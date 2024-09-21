@@ -2,96 +2,104 @@
 
 #include "model.h"
 #include "platform.h"
-#include "matrix.h"
 #include "defines.h"
 
-point rotate(point *p0, uint8_t step);
+typedef enum {
+  LOWER = 0,
+  HIGHER = 128
+} charset;
 
-void init_game() {
+void show_characters(charset);
+void show_float(void);
+
+void initialize() {
   Platform::setTextRawMode(true);
 }
 
 void step_model(uint16_t frame) {
 
-  // point p, p0, center;
-  // int16_t x, y; // Coordinates to be drawn
-  // uint16_t step = frame % (2 * ANGLES - 1);
-
-  // center = { SCREEN_WIDTH / 2, 0 };
-  // p0 = { SCREEN_HEIGHT - 1, 0 };
-
-  // p = rotate(&p0, step);
-
-  // x = center.x + p.x;
-  // y = center.y + p.y;
-
-  // Platform::setCursor(0, 0);
-  // Platform::print("p(x, y) = ");
-  // Platform::print("(");
-  // Platform::print(p.x);
-  // Platform::print(", ");
-  // Platform::print(p.y);
-  // Platform::println(")");
-  // Platform::print("step    = ");
-  // Platform::println(step);
-
-  // Platform::drawPixel(x, y);
-
-
-  // while (!Platform::pressed(UP_BUTTON)) {
-  //   Platform::idle();
-  // }
   uint8_t buttons = Platform::buttonsState();
-  static uint8_t row;
-  static uint8_t counter = 0;
+  static uint8_t state = 0;
+  bool done = false;
 
-  if ((counter & 0x7F) == 0x7F) {
-    if  (buttons & INPUT_A) {
-      Platform::clear();
-    } else {
-      return;
-    }
+  Platform::pollButtons();
+  if  (Platform::justPressed(INPUT_A)) {
+    Platform::clear();
+    state = (state + 1) % 3;
+    done = false;
   }
 
-  if (counter++ < 256) {
+  if (!done) {
+    switch (state) {
+      case 0:
+        show_characters(LOWER);
+        break;
+      case 1:
+        show_characters(HIGHER);
+        break;
+      case 2:
+        show_float();
+      default:
+        break;
+    }
+    done = true;
+  }
+}
+
+void show_characters(charset from) {
+  uint16_t counter;
+
+  for (counter = from; counter < from + 128; counter++) {
     Platform::setCursor((counter & 0x0F) * 6, ((counter & 0x7F) >> 4) << 3 );
     Platform::print((char)counter);
-  } else {
-    counter = 0;
   }
-
 }
 
-/*************** Rotation matrix *******************
- * | cos(\theta) -sin(\theta) |
- * | sin(\theta)  cos(\theta) |
- *
- * We need only two float values per angle: cos(\theta) and sin(\theta)
-*/
+void show_float(void) {
+  
+	float x, y, z, xzz, zz;
+  uint32_t *ix, *iy, *iz, *izz, *ixzz;
 
-point rotate(point *p0, uint8_t step) {
-  /* Rotate point p0 by step * 6  degrees around the center of the screen.
-   * Return the rotated point.
-   * Between 0 and Pi/2 for now.
-   */
-  point p = {0, 0};
-  rotn  r;
-  float cos, sin; // Dependent on step.
+  x = 2.;
+  y = 0.34;
+  z = 2.34;
+  zz = z - (uint32_t)z;
+  xzz = x + zz;
+  ix = (uint32_t*)&x;
+  iy = (uint32_t*)&y;
+  iz = (uint32_t*)&z;
+  izz = (uint32_t*)&zz;
+  ixzz = (uint32_t*)&xzz;
 
-  if (step < ANGLES) {
-    r = omega[step];
-    cos = r.cos;
-    sin = r.sin;
-  }  else {
-    r = omega[2 * (ANGLES - 1) - step];
-    cos = -r.cos;
-    sin = r.sin;
-  }
+  // Show the samples
+  Platform::setTextRawMode(false);
+  Platform::setCursor(0, 0);
 
-  // Matrix multiplication
-  p.x = cos * p0->x - sin * p0->y;
-  p.y = sin * p0->x + cos * p0->y;
-
-  return p;
+  // x
+  Platform::print("x   ");
+  Platform::print(x, 4);
+  Platform::print(" ");
+  Platform::println(*ix, HEX);
+  // y
+  Platform::print("y   ");
+  Platform::print(y, 4);
+  Platform::print(" ");
+  Platform::println(*iy, HEX);
+  // z
+  Platform::print("z   ");
+  Platform::print(z, 4);
+  Platform::print(" ");
+  Platform::println(*iz, HEX);
+  // zz
+  Platform::print("zz  ");
+  Platform::print(zz, 4);
+  Platform::print(" ");
+  Platform::println(*izz, HEX);
+  // xzz
+  Platform::print("xzz ");
+  Platform::print(xzz, 4);
+  Platform::print(" ");
+  Platform::println(*ixzz, HEX);
+  
+  Platform::setTextRawMode(true);
 }
-
