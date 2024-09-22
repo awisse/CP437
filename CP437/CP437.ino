@@ -1,7 +1,7 @@
 /* vim: ts=2:sts=2:expandtab
  *
  * Drawing and Rotating an arrow
- * 
+ *
  *
  *
  */

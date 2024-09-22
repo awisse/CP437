@@ -58,7 +58,12 @@ public:
   // Careful: `long` on Arduino is 32 bits, but 64 bits on a regular computer.
   static size_t print(int32_t x, uint8_t base=DEC);
   static size_t print(uint32_t x, uint8_t base=DEC);
+  // Float conversion is not the same with the Arduino `Print` class and
+  // the conversion on a desktop computer. The rounding approach
+  // in the private method `Print::printFloat` is different from
+  // standard C.
   static size_t print(float x, uint8_t decimals=2);
+  // Float and double is the same on Arduboy:
   static size_t print(double x, uint8_t decimals=2);
 
   static size_t println(void);

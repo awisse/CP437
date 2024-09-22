@@ -56,7 +56,7 @@ void show_characters(charset from) {
 }
 
 void show_float(void) {
-  
+
 	float x, y, z, xzz, zz;
   uint32_t *ix, *iy, *iz, *izz, *ixzz;
 
@@ -100,6 +100,6 @@ void show_float(void) {
   Platform::print(xzz, 6);
   Platform::print(" ");
   Platform::println(*ixzz, HEX);
-  
+
   Platform::setTextRawMode(true);
 }
