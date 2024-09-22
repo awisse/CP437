@@ -59,6 +59,7 @@ public:
   static size_t print(int32_t x, uint8_t base=DEC);
   static size_t print(uint32_t x, uint8_t base=DEC);
   static size_t print(float x, uint8_t decimals=2);
+  static size_t print(double x, uint8_t decimals=2);
 
   static size_t println(void);
   static size_t println(const char str[]);
@@ -69,6 +70,7 @@ public:
   static size_t println(int32_t x, uint8_t base=DEC);
   static size_t println(uint32_t x, uint8_t base=DEC);
   static size_t println(float x, uint8_t decimals=2);
+  static size_t println(double x, uint8_t decimals=2);
 
   // EEPROM
 

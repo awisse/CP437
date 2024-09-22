@@ -337,6 +337,9 @@ size_t Platform::print(float x, uint8_t decimals) {
   return printFloat(x, decimals);
 }
 
+size_t Platform::print(double x, uint8_t decimals) {
+  return printFloat(float(x), decimals);
+}
 
 size_t Platform::println(void) {
   return write('\n');
@@ -394,36 +397,41 @@ size_t Platform::println(float x, uint8_t decimals) {
   return t;
 }
 
+size_t Platform::println(double x, uint8_t decimals) {
+  return printFloat(float(x), decimals);
+}
+
 
 //
 #ifdef _DEBUG
-void Platform::DebugPrint(uint16_t value) {
-  std::cout << value << ":";
+void Platform::DebugPrint(uint16_t value, uint8_t base) {
+  std::cout << value;
   std::cout.flush();
-  if (++counter % 8 == 0) {
-    std::cout << "\n";
-  }
 }
 
-void Platform::DebugPrint(uint32_t value) {
-  std::cout << value << ":";
+void Platform::DebugPrint(uint32_t value, uint8_t base) {
+  std::cout << value;
   std::cout.flush();
-  if (++counter % 8 == 0) {
-    std::cout << "\n";
-  }
 }
 
-void Platform::DebugPrint(float value) {
-  std::cout << value << ":";
+void Platform::DebugPrint(float value, uint8_t decimals) {
+  std::cout << value;
   std::cout.flush();
-  if (++counter % 8 == 0) {
-    std::cout << "\n";
-  }
 }
 
-void Platform::DebugPrint(const uint8_t* text) {
-  std::cout << text << "\n";
+void Platform::DebugPrint(double value, uint8_t decimals) {
+  std::cout << value;
+  std::cout.flush();
 }
+
+void Platform::DebugPrint(const char* text) {
+  std::cout << text;
+}
+
+void Platform::DebugPrintln(void) {
+  std::cout << "\n";
+}
+
 #endif
 
 
@@ -489,10 +497,10 @@ void Initialize() {
 
 int main(int argc, char* argv[])
 {
-#ifdef _DEBUG
-  uint32_t i; // For displaying surface values
-  uint16_t pixel; // Setting a random pixel in sBuffer
-#endif
+/* #ifdef _DEBUG */
+/*   uint32_t i; // For displaying surface values */
+/*   uint16_t pixel; // Setting a random pixel in sBuffer */
+/* #endif */
   uint16_t frameCount = 0;
   zoom_scale = ZOOM_SCALE;
   if (argc == 2) {
@@ -556,18 +564,6 @@ int main(int argc, char* argv[])
             case SDLK_ESCAPE:
               running = false;
               break;
-
-#ifdef _DEBUG
-            case SDLK_t:
-              for (i=0; i<64; i++) {
-                pixel = Random(0, sizeof(sBuffer) * 8);
-                sBuffer[pixel >> 3] |= 1 << (pixel & 0x07);
-              }
-              Platform::DrawBuffer();
-              SDL_UpdateWindowSurface(AppWindow);
-              SDL_Delay(4000);
-              break;
-#endif
 
           }
           break;

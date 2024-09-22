@@ -18,6 +18,10 @@ void setup() {
   // put your setup code here, to run once:
 
   arduboy.begin();
+#ifdef _DEBUG
+  Serial.begin(9600);
+#endif
+
   arduboy.clear();
   arduboy.setFrameDuration(FRAME_DURATION);
   initialize();
@@ -166,6 +170,11 @@ static size_t Platform::print(float x, uint8_t decimals)
   arduboy.print(x, decimals);
 }
 
+static size_t Platform::print(double x, uint8_t decimals)
+{
+  arduboy.print(x, decimals);
+}
+
 // *** println ***
 
 static size_t Platform::println(void) {
@@ -211,5 +220,36 @@ static size_t Platform::println(float x, uint8_t digits)
 {
   arduboy.println(x, digits);
 }
+
+static size_t Platform::println(double x, uint8_t decimals)
+{
+  arduboy.print(x, decimals);
+}
+
+#ifdef _DEBUG
+void Platform::DebugPrint(uint16_t value, uint8_t base) {
+  Serial.print(value, base);
+}
+
+void Platform::DebugPrint(uint32_t value, uint8_t base) {
+  Serial.print(value, base);
+}
+
+void Platform::DebugPrint(float value, uint8_t decimals) {
+  Serial.print((double)value, decimals);
+}
+
+void Platform::DebugPrint(double value, uint8_t decimals) {
+  Serial.print(value, decimals);
+}
+
+void Platform::DebugPrint(const char* text) {
+  Serial.print((char*)text);
+}
+
+void Platform::DebugPrintln() {
+  Serial.println();
+}
+#endif
 
 
