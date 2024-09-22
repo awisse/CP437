@@ -77,27 +77,27 @@ void show_float(void) {
 
   // x
   Platform::print("x   ");
-  Platform::print(x, 4);
+  Platform::print(x, 6);
   Platform::print(" ");
   Platform::println(*ix, HEX);
   // y
   Platform::print("y   ");
-  Platform::print(y, 4);
+  Platform::print(y, 6);
   Platform::print(" ");
   Platform::println(*iy, HEX);
   // z
   Platform::print("z   ");
-  Platform::print(z, 4);
+  Platform::print(z, 6);
   Platform::print(" ");
   Platform::println(*iz, HEX);
   // zz
   Platform::print("zz  ");
-  Platform::print(zz, 4);
+  Platform::print(zz, 6);
   Platform::print(" ");
   Platform::println(*izz, HEX);
   // xzz
   Platform::print("xzz ");
-  Platform::print(xzz, 4);
+  Platform::print(xzz, 6);
   Platform::print(" ");
   Platform::println(*ixzz, HEX);
   

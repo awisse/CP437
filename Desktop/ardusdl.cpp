@@ -32,6 +32,7 @@ size_t write(uint8_t c); // Write one character at the cursor.
 size_t write(const char str[]); // Write a string at the cursor.
 size_t printNumber(uint32_t n, int base);
 size_t printFloat(float x, int decimals);
+void formatFloat(char* strfloat, float x, int decimals); 
 point cursor;
 uint8_t previousButtonState, currentButtonState;
 
@@ -398,13 +399,15 @@ size_t Platform::println(float x, uint8_t decimals) {
 }
 
 size_t Platform::println(double x, uint8_t decimals) {
-  return printFloat(float(x), decimals);
+  size_t t = printFloat((float)x, decimals);
+  t += println();
+  return t;
 }
-
 
 //
 #ifdef _DEBUG
 void Platform::DebugPrint(uint16_t value, uint8_t base) {
+
   std::cout << value;
   std::cout.flush();
 }
@@ -415,7 +418,9 @@ void Platform::DebugPrint(uint32_t value, uint8_t base) {
 }
 
 void Platform::DebugPrint(float value, uint8_t decimals) {
-  std::cout << value;
+  char strfloat[64];
+  formatFloat(strfloat, value, decimals);
+  std::cout << strfloat;
   std::cout.flush();
 }
 
@@ -681,14 +686,18 @@ size_t printFloat(float x, int decimals)
 {
   size_t t;
   char strfloat[64]; // Resulting string
-  char format[6]; // Format string
-  char fmt_tpl[] = "%%.%df";
 
-  t = sprintf(format, fmt_tpl, decimals);
-  t = sprintf(strfloat, format, x);
-
+  formatFloat(strfloat, x, decimals);
   t = Platform::print(strfloat);
 
   return t;
+}
+
+void formatFloat(char* strfloat, float x, int decimals) {
+  char format[6]; // Format string
+  char fmt_tpl[] = "%%.%df";
+
+  sprintf(format, fmt_tpl, decimals);
+  sprintf(strfloat, format, x);
 }
 // vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab:filetype=cpp
