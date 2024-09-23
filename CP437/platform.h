@@ -4,11 +4,6 @@
 #include <stdint.h>
 #include "defines.h"
 
-
-typedef struct {
-  uint16_t x, y;
-} point;
-
 class Platform
 {
 public:
@@ -77,14 +72,17 @@ public:
   static size_t println(float x, uint8_t decimals=2);
   static size_t println(double x, uint8_t decimals=2);
 
+
   // EEPROM
 
   // Debug
 #ifdef _DEBUG
-  static void DebugPrint(uint16_t value);
-  static void DebugPrint(unsigned long value);
-  static void DebugPrint(float value);
-  static void DebugPrint(const uint8_t* text);
+  static void DebugPrint(uint16_t value, uint8_t base=DEC);
+  static void DebugPrint(uint32_t value, uint8_t base=DEC);
+  static void DebugPrint(float value, uint8_t decimals=2);
+  static void DebugPrint(double value, uint8_t decimals=2);
+  static void DebugPrint(const char* text);
+  static void DebugPrintln();
 #endif
 	
 #ifndef ARDUINO
